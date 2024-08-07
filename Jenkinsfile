@@ -23,5 +23,20 @@ pipeline {
                 }
             }
         }
+        stage('Deploy') {
+            steps {
+                script {
+                    try {
+                        docker.withRegistry('', 'docker-credentials-id') {
+                            docker.image("Account:latest").push()
+                        }
+                        sh 'docker run -d -p 8080:8080 Account:latest'
+                    } catch (Exception e) {
+                        echo "Deployment failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
+            }
+        }
     }
 }
