@@ -14,26 +14,29 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("Account:latest", "--no-cache .")
-                }
-            }
-        }
-    }
-    post {
-        success {
-            stage('Deploy') {
-                steps {
-                    script {
-                        docker.withRegistry('', 'docker-credentials-id') {
-                            docker.image("Account:latest").push()
-                        }
-                        sh 'docker run -d -p 8080:8080 Account:latest'
+                    try {
+                        docker.build("Account:latest", "--no-cache .")
+                    } catch (Exception e) {
+                        echo "Docker build failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
                     }
                 }
             }
         }
-        failure {
-            echo "One of the stages failed. Deployment will not proceed."
+        stage('Deploy') {
+            steps {
+                script {
+                    try {
+                        docker.withRegistry('', 'docker-credentials-id') {
+                            docker.image("Account:latest").push()
+                        }
+                        sh 'docker run -d -p 8080:8080 Account:latest'
+                    } catch (Exception e) {
+                        echo "Deployment failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
+            }
         }
     }
 }
