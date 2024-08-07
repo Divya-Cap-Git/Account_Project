@@ -23,16 +23,13 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+        stage('Deploy Application') {
             steps {
                 script {
                     try {
-                        docker.withRegistry('', 'docker-credentials-id') {
-                            docker.image("Account:latest").push()
-                        }
-                        sh 'docker run -d -p 8080:8080 Account:latest'
+                        docker.image("${DOCKER_IMAGE}").run('-d -p 8081:8080')
                     } catch (Exception e) {
-                        echo "Deployment failed: ${e.getMessage()}"
+                        echo "Docker run failed: ${e.getMessage()}"
                         currentBuild.result = 'FAILURE'
                     }
                 }
