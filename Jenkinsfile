@@ -15,7 +15,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        docker.build("bookstorejenkinspipeline:latest", "--no-cache .")
+                        docker.build("Account:latest", "--no-cache .")
                     } catch (Exception e) {
                         echo "Docker build failed: ${e.getMessage()}"
                         currentBuild.result = 'FAILURE'
